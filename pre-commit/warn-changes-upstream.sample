@@ -1,0 +1,13 @@
+#!/bin/bash
+
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+git fetch --all
+upstream=$(git rev-parse --abbrev-ref --symbolic-full-name @{u})
+log=$(git log HEAD...$upstream)
+if [[ $log ]]; then
+  echo -e "\n${RED}WARNING: there are changes upstream${NC}\n"
+  echo -e "$log"
+  # abort commit when there are changes upstream
+  exit 1
+fi
