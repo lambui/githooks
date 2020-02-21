@@ -3,11 +3,24 @@
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 git fetch --all
-upstream=$(git rev-parse --abbrev-ref --symbolic-full-name @{u})
-log=$(git log HEAD...$upstream)
-if [[ $log ]]; then
+
+UPSTREAM=${1:-'@{u}'}
+LOCAL=$(git rev-parse @)
+REMOTE=$(git rev-parse "$UPSTREAM")
+BASE=$(git merge-base @ "$UPSTREAM")
+ACTION=""
+if [ $LOCAL = $REMOTE ]; then
+    ACTION="Up-to-date"
+elif [ $LOCAL = $BASE ]; then
+    ACTION="Need to pull"
+elif [ $REMOTE = $BASE ]; then
+    ACTION="Need to push"
+else
+    ACTION="Diverged"
+fi
+if [[ $ACTION == "Need to pull" || $ACTION == "Diverged" ]]; then
   echo -e "\n${RED}WARNING: there are changes upstream${NC}\n"
-  echo -e "$log"
+
   # abort commit when there are changes upstream
   exit 1
 fi
